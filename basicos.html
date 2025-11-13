@@ -1,0 +1,58 @@
+<!doctype html><html lang="es"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Conceptos básicos de probabilidad</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="module">
+  import { toNumber } from "./app.js?v=5";
+
+  function union(pA,pB,pAB){ return pA + pB - pAB; }        // Regla de la suma
+  function producto(pA,pBgA){ return pBgA * pA; }           // Regla del producto
+  function compl(pA){ return 1 - pA; }
+  function excluyentes(pAB){ return Math.abs(pAB) < 1e-12; }
+
+  window.calc = ()=>{
+    const pA  = toNumber(document.getElementById("pA").value);
+    const pB  = toNumber(document.getElementById("pB").value);
+    const pAB = toNumber(document.getElementById("pAB").value);
+    const u   = union(pA,pB,pAB);
+    const indep = Math.abs(pA*pB - pAB) < 1e-9 ? "Sí" : "No";
+    const excl = excluyentes(pAB) ? "Sí" : "No";
+    document.getElementById("out").innerHTML =
+      `<p><b>Regla de la suma:</b> P(A ∪ B) = ${u.toFixed(6)}</p>
+       <p><b>Complemento:</b> P(¬A) = ${compl(pA).toFixed(6)}, P(¬B) = ${compl(pB).toFixed(6)}</p>
+       <p><b>Eventos excluyentes?</b> ${excl} (P(A∩B)=0)</p>
+       <p><b>Eventos independientes?</b> ${indep} (compara P(A)P(B) vs P(A∩B))</p>`;
+  };
+</script>
+</head>
+<body class="bg-blue-300 text-gray-800">
+<header class="bg-blue-600 text-white"><div class="max-w-5xl mx-auto p-5">
+  <h1 class="text-2xl md:text-3xl font-bold">Conceptos básicos de probabilidad</h1>
+  <p>Regla de la suma, complemento, exclusión, independencia.</p>
+</div></header>
+<nav class="bg-white border-b"><div class="max-w-5xl mx-auto p-3 flex gap-2">
+
+</div></nav>
+<main class="max-w-5xl mx-auto p-6 grid md:grid-cols-2 gap-6">
+<section class="bg-blue-100 rounded-2xl shadow p-6">
+  <h2 class="text-xl font-semibold mb-3">Teoría breve</h2>
+  <ul class="list-disc pl-6 text-sm space-y-1">
+    <li><b>Concepto:</b> Casos favorables / casos posibles.</li>
+    <li><b>Regla de la suma:</b> P(A∪B)=P(A)+P(B)−P(A∩B).</li>
+    <li><b>Regla del producto:</b> P(A∩B)=P(B|A)P(A).</li>
+    <li><b>Complemento:</b> P(¬A)=1−P(A).</li>
+    <li><b>Excluyentes:</b> P(A∩B)=0. <b>Independientes:</b> P(A∩B)=P(A)P(B).</li>
+  </ul>
+</section>
+<section class="bg-white rounded-2xl shadow p-6">
+  <h2 class="text-xl font-semibold mb-3">Cálculo</h2>
+  <div class="grid grid-cols-3 gap-3">
+    <label class="text-sm">P(A) <input id="pA" type="number" step="0.01" value="0.3" class="w-full mt-1 border rounded p-2"></label>
+    <label class="text-sm">P(B) <input id="pB" type="number" step="0.01" value="0.4" class="w-full mt-1 border rounded p-2"></label>
+    <label class="text-sm">P(A∩B) <input id="pAB" type="number" step="0.01" value="0.12" class="w-full mt-1 border rounded p-2"></label>
+  </div>
+  <button onclick="calc()" class="mt-4 px-4 py-2 bg-#05FA80-600 text-white rounded-lg">Calcular</button>
+  <div id="out" class="mt-4 text-sm"></div>
+</section>
+</main>
+</body></html>

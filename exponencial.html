@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Distribución Exponencial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script type="module">
+    import { toNumber, expPDF, expCDF, expBetween } from "./app.js?v=3";
+    let chart;
+
+    function render(lambda, a, b){
+      const ctx = document.getElementById("chart").getContext("2d");
+      if(chart) chart.destroy();
+
+      // Rango para graficar ≈ 0 a 5/λ (donde ya es casi 0)
+      const xmax = Math.max(b, (5/Math.max(lambda, 1e-9)));
+      const steps = 200;
+      const xs = [], f = [], fShade = [];
+      for(let i=0;i<=steps;i++){
+        const x = (i/steps)*xmax;
+        const y = expPDF(lambda, x);
+        xs.push(Number(x.toFixed(3)));
+        f.push(Number(y.toFixed(6)));
+        fShade.push((x>=a && x<=b) ? Number(y.toFixed(6)) : null);
+      }
+
+      chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: xs,
+          datasets: [
+            { label: "f(x)", data: f, pointRadius: 0, tension: 0.2 },
+            { label: "Área entre a y b", data: fShade, pointRadius: 0, tension: 0.2, fill: true }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { title: { display: true, text: "x (tiempo/espacio)" } },
+            y: { title: { display: true, text: "densidad" }, beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    window.calcular = () => {
+      try{
+        const lambda = toNumber(document.getElementById("lambda").value);
+        const a = toNumber(document.getElementById("a").value);
+        const b = toNumber(document.getElementById("b").value);
+        if(lambda <= 0) throw new Error("λ debe ser > 0");
+        if(a < 0 || b < 0) throw new Error("a y b deben ser ≥ 0");
+        if(a > b) throw new Error("Debe cumplirse a ≤ b");
+
+        const pLEa = expCDF(lambda, a);
+        const pLEb = expCDF(lambda, b);
+        const pBetween = expBetween(lambda, a, b);
+        const pGEb = 1 - pLEb;
+
+        document.getElementById("resultado").innerHTML =
+          `<p>P(X ≤ ${a}) = <b>${pLEa.toFixed(6)}</b></p>
+           <p>P(X ≤ ${b}) = <b>${pLEb.toFixed(6)}</b></p>
+           <p>P(${a} ≤ X ≤ ${b}) = <b>${pBetween.toFixed(6)}</b></p>
+           <p>P(X ≥ ${b}) = <b>${pGEb.toFixed(6)}</b></p>
+           <p class="mt-2 text-gray-700">
+             <b>Media</b> = 1/λ, <b>Varianza</b> = 1/λ².
+             Relación con Poisson: si los eventos siguen un proceso Poisson(λ),
+             los tiempos entre eventos ~ Exponencial(λ). Propiedad de “falta de memoria”.
+           </p>`;
+
+        render(lambda, a, b);
+      }catch(err){
+        document.getElementById("resultado").innerHTML = <p class="text-red-600">${err.message}</p>;
+      }
+    };
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <header class="bg-indigo-600 text-white">
+    <div class="max-w-5xl mx-auto p-5">
+      <h1 class="text-2xl md:text-3xl font-bold">Distribución Exponencial</h1>
+      <p class="opacity-90">Tiempos entre eventos con tasa λ (propiedad sin memoria).</p>
+    </div>
+  </header>
+
+  <nav class="bg-white border-b">
+    <div class="max-w-5xl mx-auto p-3 flex gap-2">
+      <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./index.html">Inicio</a>
+      <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./binomial.html">Binomial</a>
+      <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./poisson.html">Poisson</a>
+      <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./normal.html">Normal (Z)</a>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto p-6 grid md:grid-cols-2 gap-6">
+    <section class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-3">Teoría breve</h2>
+      <ul class="list-disc pl-6 text-sm text-gray-700 space-y-1">
+        <li>X ~ Exp(λ), λ&gt;0.</li>
+        <li>f(x)=λe^{-λx}, F(x)=1−e^{-λx}, x≥0.</li>
+        <li>P(a ≤ X ≤ b)=F(b)−F(a), P(X≥b)=e^{-λb}.</li>
+        <li>Media=1/λ, Var=1/λ². Sin memoria.</li>
+        <li>Relacionada con Poisson: tiempos entre llegadas.</li>
+      </ul>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-3">Cálculo</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-sm">λ (tasa)
+          <input id="lambda" type="number" step="0.1" value="0.2" class="w-full mt-1 border rounded p-2">
+        </label>
+        <label class="text-sm">a
+          <input id="a" type="number" step="0.1" value="1" class="w-full mt-1 border rounded p-2">
+        </label>
+        <label class="text-sm">b
+          <input id="b" type="number" step="0.1" value="4" class="w-full mt-1 border rounded p-2">
+        </label>
+      </div>
+      <button onclick="calcular()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Calcular</button>
+      <div id="resultado" class="mt-4 text-sm"></div>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-6 md:col-span-2">
+      <h2 class="text-xl font-semibold mb-3">Gráfica</h2>
+      <canvas id="chart" height="120"></canvas>
+    </section>
+  </main>
+</body>
+</html>

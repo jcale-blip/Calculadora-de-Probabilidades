@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Distribución de Poisson</title>
+  <!-- Tailwind y Chart.js por CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script type="module">
+    import { toNumber, poissonPMF, poissonCDF } from "./app.js";
+    let chart;
+
+    function renderChart(labels, data){
+      const ctx = document.getElementById("chart").getContext("2d");
+      if(chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: { labels, datasets: [{ label: "P(X = x)", data }] },
+        options: { responsive: true, scales: { y: { beginAtZero: true } } }
+      });
+    }
+
+    function rangoGrafica(lambda, x){
+      // Rango recomendado: [0, max( x, floor(λ + 4√λ) )], acotado
+      const maxTheo = Math.ceil(lambda + 4 * Math.sqrt(Math.max(lambda, 0)));
+      return Math.min(Math.max(x, maxTheo), 50); // no más de 50 barras
+    }
+
+    window.calcular = () => {
+      try{
+        const lambda = toNumber(document.getElementById("lambda").value);
+        const x = toNumber(document.getElementById("x").value);
+        if(lambda <= 0) throw new Error("λ debe ser > 0");
+        if(x < 0 || !Number.isInteger(x)) throw new Error("x debe ser entero ≥ 0");
+
+        const maxK = rangoGrafica(lambda, x);
+        const labels = [], pmf = [];
+        for(let k=0;k<=maxK;k++){ labels.push(k); pmf.push(poissonPMF(lambda,k)); }
+
+        const px = poissonPMF(lambda, x);
+        const cdfLE = poissonCDF(lambda, x);
+        const cdfGE = 1 - poissonCDF(lambda, x-1);
+
+        document.getElementById("resultado").innerHTML =
+          `<p>P(X = ${x}) = <b>${px.toFixed(6)}</b></p>
+           <p>P(X ≤ ${x}) = <b>${cdfLE.toFixed(6)}</b></p>
+           <p>P(X ≥ ${x}) = <b>${cdfGE.toFixed(6)}</b></p>
+           <p class="mt-2 text-gray-700">Interpretación: Con tasa promedio λ=${lambda}, la probabilidad de observar exactamente ${x} sucesos en el intervalo es ${(px*100).toFixed(2)}%.</p>`;
+
+        renderChart(labels, pmf.map(v=>Number(v.toFixed(6))));
+      }catch(err){
+        document.getElementById("resultado").innerHTML = <p class="text-red-600">${err.message}</p>;
+      }
+    };
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <header class="bg-indigo-600 text-white">
+    <div class="max-w-5xl mx-auto p-5">
+      <h1 class="text-2xl md:text-3xl font-bold">Distribución de Poisson</h1>
+      <p class="opacity-90">Aplicaciones en conteos por tiempo o espacio. Casos “exactamente”, “a lo sumo”, “al menos”.</p>
+    </div>
+  </header>
+
+  <nav class="bg-white border-b">
+    <div class="max-w-5xl mx-auto p-3 flex gap-2">
+      <a class="px-3 py-2 rounded hover:bg-indigo-50" href="index.html">Inicio</a>
+      <a class="px-3 py-2 rounded hover:bg-indigo-50" href="binomial.html">Binomial</a>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto p-6 grid md:grid-cols-2 gap-6">
+    <section class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-3">Teoría breve</h2>
+      <p class="mb-2">
+        <b>X ~ Poisson(λ)</b> modela el número de ocurrencias en un intervalo cuando los sucesos:
+        ocurren de manera independiente, con tasa promedio constante <b>λ</b>, y de a uno por vez.
+      </p>
+      <ul class="list-disc pl-6 text-sm text-gray-700 space-y-1">
+        <li><b>Media</b> = λ, <b>Varianza</b> = λ</li>
+        <li><b>Exactamente</b> x: PMF <i>P(X=x)=e^{-λ} λ^x / x!</i></li>
+        <li><b>A lo sumo</b> x: <i>P(X≤x)</i> (CDF)</li>
+        <li><b>Al menos</b> x: <i>1 − P(X≤x−1)</i></li>
+      </ul>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-6">
+      <h2 class="text-xl font-semibold mb-3">Cálculo</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-sm">λ (tasa promedio)
+          <input id="lambda" type="number" step="0.1" value="4" class="w-full mt-1 border rounded p-2">
+        </label>
+        <label class="text-sm">x (conteo)
+          <input id="x" type="number" value="2" class="w-full mt-1 border rounded p-2">
+        </label>
+      </div>
+      <button onclick="calcular()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Calcular</button>
+      <div id="resultado" class="mt-4 text-sm"></div>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-6 md:col-span-2">
+      <h2 class="text-xl font-semibold mb-3">Gráfica</h2>
+      <canvas id="chart" height="120"></canvas>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teorema de Bayes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script type="module">
+    import { toNumber } from "./app.js?v=6";
+
+    // ============ Modo médico: prevalencia, sensibilidad, especificidad ============
+    // A = enfermo, B = test positivo
+    // prev = P(A), sens = P(B|A), esp = P(¬B|¬A)  => FPR = 1-esp = P(B|¬A)
+    // P(B) = sens*prev + (1-esp)*(1-prev)
+    // P(A|B) = sens*prev / P(B)
+    // P(¬A|B) = 1 - P(A|B)
+    window.calcBayesMedico = () => {
+      const prev = clamp01(toNumber(document.getElementById("prev").value));
+      const sens = clamp01(toNumber(document.getElementById("sens").value));
+      const esp  = clamp01(toNumber(document.getElementById("esp").value));
+      const N    = Math.max(0, Math.floor(toNumber(document.getElementById("N").value)));
+
+      const fpr = 1 - esp;
+      const pB  = sens*prev + fpr*(1 - prev);
+      const pAgB = pB > 0 ? (sens*prev)/pB : 0;
+      const notA_gB = 1 - pAgB;
+
+      // Si N > 0, mostramos una matriz de confusión aproximada
+      let matrixHTML = "";
+      if(N > 0){
+        const enfermos = Math.round(prev*N);
+        const sanos    = N - enfermos;
+        const tp = Math.round(sens * enfermos);
+        const fn = enfermos - tp;
+        const fp = Math.round(fpr * sanos);
+        const tn = sanos - fp;
+
+        matrixHTML = `
+          <div class="overflow-x-auto mt-3">
+            <table class="min-w-[360px] text-sm border">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th class="border px-3 py-2"></th>
+                  <th class="border px-3 py-2">Test +</th>
+                  <th class="border px-3 py-2">Test −</th>
+                  <th class="border px-3 py-2">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="border px-3 py-2">Enfermo (A)</td>
+                  <td class="border px-3 py-2">${tp}</td>
+                  <td class="border px-3 py-2">${fn}</td>
+                  <td class="border px-3 py-2">${enfermos}</td>
+                </tr>
+                <tr>
+                  <td class="border px-3 py-2">Sano (¬A)</td>
+                  <td class="border px-3 py-2">${fp}</td>
+                  <td class="border px-3 py-2">${tn}</td>
+                  <td class="border px-3 py-2">${sanos}</td>
+                </tr>
+                <tr class="bg-gray-50 font-semibold">
+                  <td class="border px-3 py-2">Total</td>
+                  <td class="border px-3 py-2">${tp+fp}</td>
+                  <td class="border px-3 py-2">${fn+tn}</td>
+                  <td class="border px-3 py-2">${N}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>`;
+      }
+
+      document.getElementById("outMed").innerHTML =
+        `<p><b>P(B)</b> = ${pB.toFixed(6)}</p>
+         <p><b>P(A|B)</b> (valor predictivo positivo) = ${pAgB.toFixed(6)}</p>
+         <p><b>P(¬A|B)</b> = ${notA_gB.toFixed(6)}</p>
+         <p class="text-sm mt-2 text-gray-700">
+           Interpretación: con una prevalencia de ${pct(prev)}, sensibilidad ${pct(sens)} y especificidad ${pct(esp)},
+           si el test sale positivo, la probabilidad de estar enfermo es ${pct(pAgB)}.
+         </p>
+         ${matrixHTML}`;
+    };
+
+    // ============ Modo directo: P(A), P(B), P(B|A) ============
+    // P(A|B) = P(B|A) P(A) / P(B)
+    window.calcBayesDirecto = () => {
+      const pA   = clamp01(toNumber(document.getElementById("pA").value));
+      const pB   = clamp01(toNumber(document.getElementById("pB").value));
+      const pBgA = clamp01(toNumber(document.getElementById("pBgA").value));
+      const pAgB = pB > 0 ? (pBgA*pA)/pB : 0;
+
+      document.getElementById("outDir").innerHTML =
+        `<p><b>P(A|B)</b> = ${pAgB.toFixed(6)}</p>
+         <p class="text-sm mt-2 text-gray-700">
+           Esta es la probabilidad posterior de A con evidencia B usando Bayes.
+         </p>`;
+    };
+
+    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+    function pct(x){ return (x*100).toFixed(2) + "%"; }
+  </script>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+<header class="bg-blue-600 text-white">
+  <div class="max-w-5xl mx-auto p-5">
+    <h1 class="text-2xl md:text-3xl font-bold">Teorema de Bayes</h1>
+    <p>Interpretación y aplicaciones (diagnóstico, pruebas y confiabilidad).</p>
+  </div>
+</header>
+
+<nav class="bg-white border-b">
+  <div class="max-w-5xl mx-auto p-3 flex flex-wrap gap-2">
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./index.html">Inicio</a>
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./basicos.html">Conceptos básicos</a>
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./condicional.html">Condicional</a>
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./acerca.html">Acerca</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto p-6 grid md:grid-cols-2 gap-6">
+  <!-- Teoría -->
+  <section class="bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold mb-3">Teoría breve</h2>
+    <p class="text-sm leading-relaxed">
+      El <b>Teorema de Bayes</b> actualiza la probabilidad de una hipótesis (<i>A</i>)
+      con base en evidencia (<i>B</i>):
+    </p>
+    <div class="bg-gray-100 text-center p-3 rounded-lg my-3 text-indigo-700 font-semibold">
+      P(A|B) = [ P(B|A) × P(A) ] / P(B)
+    </div>
+    <ul class="list-disc pl-6 text-sm space-y-1">
+      <li><b>P(A)</b>: probabilidad previa (prevalencia, tasa base).</li>
+      <li><b>P(B|A)</b>: verosimilitud (ej. sensibilidad del test).</li>
+      <li><b>P(B)</b>: probabilidad total de la evidencia.</li>
+      <li><b>P(A|B)</b>: probabilidad posterior (actualizada).</li>
+    </ul>
+  </section>
+
+  <!-- Modo médico -->
+  <section class="bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold mb-3">Modo médico (prevalencia/sensibilidad/especificidad)</h2>
+    <div class="grid grid-cols-4 gap-3">
+      <label class="text-sm col-span-2">Prevalencia P(A)
+        <input id="prev" type="number" step="0.001" value="0.01" class="w-full mt-1 border rounded p-2">
+      </label>
+      <label class="text-sm col-span-1">Sensibilidad P(B|A)
+        <input id="sens" type="number" step="0.001" value="0.90" class="w-full mt-1 border rounded p-2">
+      </label>
+      <label class="text-sm col-span-1">Especificidad P(¬B|¬A)
+        <input id="esp" type="number" step="0.001" value="0.95" class="w-full mt-1 border rounded p-2">
+      </label>
+      <label class="text-sm col-span-2">Tamaño N (opcional matriz)
+        <input id="N" type="number" step="1" value="1000" class="w-full mt-1 border rounded p-2">
+      </label>
+    </div>
+    <button onclick="calcBayesMedico()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Calcular</button>
+    <div id="outMed" class="mt-4 text-sm"></div>
+  </section>
+
+  <!-- Modo directo -->
+  <section class="bg-white rounded-2xl shadow p-6 md:col-span-2">
+    <h2 class="text-xl font-semibold mb-3">Modo directo (P(A), P(B), P(B|A))</h2>
+    <div class="grid grid-cols-3 gap-3">
+      <label class="text-sm">P(A)
+        <input id="pA" type="number" step="0.001" value="0.01" class="w-full mt-1 border rounded p-2">
+      </label>
+      <label class="text-sm">P(B)
+        <input id="pB" type="number" step="0.001" value="0.05" class="w-full mt-1 border rounded p-2">
+      </label>
+      <label class="text-sm">P(B|A)
+        <input id="pBgA" type="number" step="0.001" value="0.90" class="w-full mt-1 border rounded p-2">
+      </label>
+    </div>
+    <button onclick="calcBayesDirecto()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Calcular</button>
+    <div id="outDir" class="mt-4 text-sm"></div>
+  </section>
+</main>
+</body>
+</html>

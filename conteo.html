@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Técnicas de Conteo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script type="module">
+    import { toNumber, factorial, nCr } from "./app.js?v=7";
+
+    // nPr = n! / (n-r)!
+    function nPr(n, r){
+      if(n < 0 || r < 0 || r > n) return 0;
+      return factorial(n) / factorial(n - r);
+    }
+
+    // ===== Calculadoras =====
+    window.calcPerm = () => {
+      const n = Math.max(0, Math.floor(toNumber(document.getElementById("nP").value)));
+      const res = factorial(n);
+      document.getElementById("outP").innerHTML =
+        `P(${n}) = ${res.toLocaleString("en-US")}<br>
+         <span class="text-sm text-gray-600">Permutaciones de ${n} elementos en orden.</span>`;
+    };
+
+    window.calcPermR = () => {
+      const n = Math.max(0, Math.floor(toNumber(document.getElementById("nPr").value)));
+      const r = Math.max(0, Math.floor(toNumber(document.getElementById("rPr").value)));
+      if(r > n){
+        document.getElementById("outPr").innerHTML = <span class="text-red-600">r no puede ser mayor que n.</span>;
+        return;
+      }
+      const res = nPr(n, r);
+      document.getElementById("outPr").innerHTML =
+        `P(${n}, ${r}) = ${res.toLocaleString("en-US")}<br>
+         <span class="text-sm text-gray-600">Orden SÍ importa, sin repetición.</span>`;
+    };
+
+    window.calcComb = () => {
+      const n = Math.max(0, Math.floor(toNumber(document.getElementById("nC").value)));
+      const r = Math.max(0, Math.floor(toNumber(document.getElementById("rC").value)));
+      if(r > n){
+        document.getElementById("outC").innerHTML = <span class="text-red-600">r no puede ser mayor que n.</span>;
+        return;
+      }
+      const res = nCr(n, r);
+      document.getElementById("outC").innerHTML =
+        `C(${n}, ${r}) = ${res.toLocaleString("en-US")}<br>
+         <span class="text-sm text-gray-600">Orden NO importa.</span>`;
+    };
+  </script>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+<header class="bg-indigo-600 text-white">
+  <div class="max-w-5xl mx-auto p-5">
+    <h1 class="text-2xl md:text-3xl font-bold">Técnicas de Conteo</h1>
+    <p>Permutaciones, permutaciones con r y combinaciones.</p>
+  </div>
+</header>
+
+<nav class="bg-white border-b">
+  <div class="max-w-5xl mx-auto p-3 flex flex-wrap gap-2">
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./index.html">Inicio</a>
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./basicos.html">Conceptos básicos</a>
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./condicional.html">Condicional</a>
+    <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./bayes.html">Bayes</a>
+  </div>
+</nav>
+
+<main class="max-w-5xl mx-auto p-6 grid md:grid-cols-2 gap-6">
+  <!-- Teoría -->
+  <section class="bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold mb-3">Teoría breve</h2>
+    <ul class="list-disc pl-6 text-sm space-y-1">
+      <li><b>Permutaciones:</b> P(n)=n! (orden importa, todos los elementos).</li>
+      <li><b>Permutaciones con r:</b> P(n,r)=n!/(n−r)! (orden importa, r seleccionados).</li>
+      <li><b>Combinaciones:</b> C(n,r)=nCr=n!/[r!(n−r)!] (orden NO importa).</li>
+    </ul>
+  </section>
+
+  <!-- P(n) -->
+  <section class="bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold mb-3">Permutaciones: P(n)</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="text-sm">n
+        <input id="nP" type="number" value="5" class="w-full mt-1 border rounded p-2">
+      </label>
+    </div>
+    <button onclick="calcPerm()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Calcular</button>
+    <div id="outP" class="mt-4 text-sm"></div>
+  </section>
+
+  <!-- P(n,r) -->
+  <section class="bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold mb-3">Permutaciones con r: P(n,r)</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="text-sm">n
+        <input id="nPr" type="number" value="6" class="w-full mt-1 border rounded p-2">
+      </label>
+      <label class="text-sm">r
+        <input id="rPr" type="number" value="3" class="w-full mt-1 border rounded p-2">
+      </label>
+    </div>
+    <button onclick="calcPermR()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Calcular</button>
+    <div id="outPr" class="mt-4 text-sm"></div>
+  </section>
+
+  <!-- C(n,r) -->
+  <section class="bg-white rounded-2xl shadow p-6">
+    <h2 class="text-xl font-semibold mb-3">Combinaciones: C(n,r)</h2>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="text-sm">n
+        <input id="nC" type="number" value="6" class="w-full mt-1 border rounded p-2">
+      </label>
+      <label class="text-sm">r
+        <input id="rC" type="number" value="3" class="w-full mt-1 border rounded p-2">
+      </label>
+    </div>
+    <button onclick="calcComb()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Calcular</button>
+    <div id="outC" class="mt-4 text-sm"></div>
+  </section>
+</main>
+</body>
+</html>
