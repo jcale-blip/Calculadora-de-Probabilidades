@@ -28,7 +28,7 @@
       const n = Math.max(0, Math.floor(toNumber(document.getElementById("nPr").value)));
       const r = Math.max(0, Math.floor(toNumber(document.getElementById("rPr").value)));
       if(r > n){
-        document.getElementById("outPr").innerHTML = <span class="text-red-600">r no puede ser mayor que n.</span>;
+        document.getElementById("outPr").innerHTML = `<span class="text-red-600">r no puede ser mayor que n.</span>`;
         return;
       }
       const res = nPr(n, r);
@@ -41,7 +41,7 @@
       const n = Math.max(0, Math.floor(toNumber(document.getElementById("nC").value)));
       const r = Math.max(0, Math.floor(toNumber(document.getElementById("rC").value)));
       if(r > n){
-        document.getElementById("outC").innerHTML = <span class="text-red-600">r no puede ser mayor que n.</span>;
+        document.getElementById("outC").innerHTML = `<span class="text-red-600">r no puede ser mayor que n.</span>`;
         return;
       }
       const res = nCr(n, r);
@@ -53,7 +53,7 @@
 </head>
 
 <body class="bg-gray-50 text-gray-800">
-<header class="bg-indigo-600 text-white">
+<header class="bg-green-600 text-white">
   <div class="max-w-5xl mx-auto p-5">
     <h1 class="text-2xl md:text-3xl font-bold">Técnicas de Conteo</h1>
     <p>Permutaciones, permutaciones con r y combinaciones.</p>

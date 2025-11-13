@@ -25,16 +25,16 @@
   };
 </script>
 </head>
-<body class="bg-blue-300 text-gray-800">
-<header class="bg-blue-600 text-white"><div class="max-w-5xl mx-auto p-5">
+<body class="bg-gray-50 text-gray-800">
+<header class="bg-green-600 text-white"><div class="max-w-5xl mx-auto p-5">
   <h1 class="text-2xl md:text-3xl font-bold">Conceptos básicos de probabilidad</h1>
   <p>Regla de la suma, complemento, exclusión, independencia.</p>
 </div></header>
 <nav class="bg-white border-b"><div class="max-w-5xl mx-auto p-3 flex gap-2">
-
+  <a class="px-3 py-2 rounded hover:bg-indigo-50" href="./index.html">Inicio</a>
 </div></nav>
 <main class="max-w-5xl mx-auto p-6 grid md:grid-cols-2 gap-6">
-<section class="bg-blue-100 rounded-2xl shadow p-6">
+<section class="bg-white rounded-2xl shadow p-6">
   <h2 class="text-xl font-semibold mb-3">Teoría breve</h2>
   <ul class="list-disc pl-6 text-sm space-y-1">
     <li><b>Concepto:</b> Casos favorables / casos posibles.</li>
@@ -51,7 +51,7 @@
     <label class="text-sm">P(B) <input id="pB" type="number" step="0.01" value="0.4" class="w-full mt-1 border rounded p-2"></label>
     <label class="text-sm">P(A∩B) <input id="pAB" type="number" step="0.01" value="0.12" class="w-full mt-1 border rounded p-2"></label>
   </div>
-  <button onclick="calc()" class="mt-4 px-4 py-2 bg-#05FA80-600 text-white rounded-lg">Calcular</button>
+  <button onclick="calc()" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg">Calcular</button>
   <div id="out" class="mt-4 text-sm"></div>
 </section>
 </main>
